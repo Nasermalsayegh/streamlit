@@ -50,10 +50,6 @@ body {
     background-color: #e67e22; /* Orange for Put */
 }
 
-.metric-volatility {
-    background-color: #8e44ad; /* Purple for Implied Volatility */
-}
-
 /* Footer Styles */
 .footer {
     position: fixed;
@@ -143,6 +139,10 @@ with st.sidebar.form(key='parameters_form'):
 
     submit_button = st.form_submit_button(label='Calculate')
 
+st.sidebar.markdown("""
+[Connect with me on LinkedIn](https://www.linkedin.com/in/nasermalsayegh/)
+""")
+
 # -------------------------------
 # Main Page Content
 # -------------------------------
@@ -164,7 +164,7 @@ if submit_button:
     greeks = opc.calculate_greeks()
 
     # Display Results
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
         st.markdown(f"""
@@ -179,14 +179,6 @@ if submit_button:
         <div class="metric-box metric-put">
             <h3>Put Option Price</h3>
             <p>${put_price:.2f}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown(f"""
-        <div class="metric-box metric-volatility">
-            <h3>Implied Volatility</h3>
-            <p>{volatility:.2%}</p>
         </div>
         """, unsafe_allow_html=True)
     
