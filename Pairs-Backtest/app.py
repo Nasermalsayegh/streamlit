@@ -5,6 +5,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
+st.set_page_config(
+    page_title="Pairs Trading Backtest",
+    page_icon="💹",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 # Function to calculate pairs trading strategy
 def Pairs(Ticker1, Ticker2, years, UB_entry, LB_entry, UB_exit, LB_exit, Amount_Per_Pair=10000, Transaction_Cost=0):
 
