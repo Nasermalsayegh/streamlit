@@ -15,56 +15,6 @@ st.set_page_config(
 )
 
 # -------------------------------
-# Custom CSS Styles
-# -------------------------------
-st.markdown("""
-<style>
-/* General Styles */
-body {
-    background-color: #f5f5f5;
-    color: #333333;
-}
- 
-/* Header Styles */
-.header-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #2E4053;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-/* Metric Styles */
-.metric-box {
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    color: white;
-}
-
-.metric-call {
-    background-color: #3498db; /* Blue for Call */
-}
-
-.metric-put {
-    background-color: #e67e22; /* Orange for Put */
-}
-
-/* Footer Styles */
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #2E4053;
-    color: white;
-    text-align: center;
-    padding: 10px 0;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# -------------------------------
 # Option Pricing Calculator Class
 # -------------------------------
 class OptionPricingCalculator:
@@ -139,14 +89,10 @@ with st.sidebar.form(key='parameters_form'):
 
     submit_button = st.form_submit_button(label='Calculate')
 
-st.sidebar.markdown("""
-[Connect with me on LinkedIn](https://www.linkedin.com/in/nasermalsayegh/)
-""")
-
 # -------------------------------
 # Main Page Content
 # -------------------------------
-st.markdown("<h1 class='header-title'>European Option Pricing Dashboard</h1>", unsafe_allow_html=True)
+st.title("European Option Pricing Dashboard")
 
 if submit_button:
     # Initialize the calculator
@@ -167,20 +113,12 @@ if submit_button:
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown(f"""
-        <div class="metric-box metric-call">
-            <h3>Call Option Price</h3>
-            <p>${call_price:.2f}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.subheader("Call Option Price")
+        st.write(f"${call_price:.2f}")
     
     with col2:
-        st.markdown(f"""
-        <div class="metric-box metric-put">
-            <h3>Put Option Price</h3>
-            <p>${put_price:.2f}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.subheader("Put Option Price")
+        st.write(f"${put_price:.2f}")
     
     st.markdown("---")
     
@@ -215,12 +153,3 @@ if submit_button:
     )
     
     st.plotly_chart(fig_delta, use_container_width=True)
-
-# -------------------------------
-# Footer
-# -------------------------------
-st.markdown("""
-<div class="footer">
-    <p>Developed by <a href="https://www.linkedin.com/in/nasermalsayegh/" style="color: #ecf0f1; text-decoration: none;">Naser Alsayegh</a> | © 2024 All Rights Reserved</p>
-</div>
-""", unsafe_allow_html=True)
