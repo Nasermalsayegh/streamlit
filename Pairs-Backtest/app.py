@@ -13,6 +13,20 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Function to calculate maximum drawdown
+def calculate_max_drawdown(pnl_series):
+    """Calculate the maximum drawdown from a PnL series."""
+    # Calculate the running maximum of the PnL series
+    running_max = pnl_series.cummax()
+    
+    # Calculate the drawdown, which is the gap between running max and current PnL
+    drawdown = running_max - pnl_series
+    
+    # Find the maximum drawdown
+    max_drawdown = drawdown.max()
+    
+    return max_drawdown
+
 # Function to calculate pairs trading strategy
 def Pairs(Ticker1, Ticker2, years, UB_entry, LB_entry, UB_exit, LB_exit, Amount_Per_Pair=10000, Transaction_Cost=0):
 
@@ -147,7 +161,7 @@ st.title("Pairs Trading Strategy Backtest")
 st.sidebar.header("Input Parameters")
 Ticker1 = st.sidebar.text_input("Ticker 1", "BRX")
 Ticker2 = st.sidebar.text_input("Ticker 2", "KIM")
-years = st.sidebar.number_input("Years of Data", min_value=1, max_value=20, value=5)
+years = st.sidebar.number_input("Years of Data", min_value=1, max_value=50, value=5)
 UB_entry = st.sidebar.number_input("Upper Bound Entry Z-Score", value=1)
 LB_entry = st.sidebar.number_input("Lower Bound Entry Z-Score", value=1)
 UB_exit = st.sidebar.number_input("Upper Bound Exit Z-Score", value=0.5)
@@ -180,5 +194,34 @@ if df is not None:
     plt.plot(df.index, df['Pnl'], label='PnL', color='blue')
     plt.legend()
     st.pyplot(plt)
+    
+     # Benchmark comparison
+    st.header('Benchmark Comparison')
+    benchmark_ticker = 'SPY'  # Using SPY (S&P 500 ETF) as a benchmark
+    benchmark_data = yf.download(benchmark_ticker, dt.date.today() - dt.timedelta(days=365 * int(years)), dt.date.today())
+    if not benchmark_data.empty:
+        benchmark_data['Returns'] = benchmark_data['Adj Close'].pct_change().cumsum()
+        fig_benchmark, ax_benchmark = plt.subplots(figsize=(10, 5))
+        ax_benchmark.plot(df.index, df['Pnl'], label='Pairs Trading PnL')
+        ax_benchmark.plot(benchmark_data.index, benchmark_data['Returns'] * Amount_Per_Pair, label='S&P 500 Returns')
+        ax_benchmark.set_xlabel('Date')
+        ax_benchmark.set_ylabel('PnL ($)')
+        ax_benchmark.set_title('PnL vs S&P 500 Benchmark')
+        ax_benchmark.legend()
+        st.pyplot(fig_benchmark)
+    else:
+        st.write('Benchmark data not available.')
+
+    # Additional Stats
+    st.header('Performance Metrics')
+    total_pnl = df['Pnl'].iloc[-1]
+    num_trades = len(df[df['T1 Trade'] != 0])
+    max_drawdown = calculate_max_drawdown(df['Pnl'])
+
+    st.write(f"Total PnL: ${total_pnl:,.2f}")
+    st.write(f"Number of Trades: {num_trades}")
+    st.write(f"Max Drawdown: ${max_drawdown:,.2f}")
+
 else:
     st.write("Error: Invalid ticker data. Please check the ticker symbols and try again.")
+
