@@ -1,47 +1,23 @@
 import streamlit as st
 import yfinance as yf
-import pandas as pd
-from datetime import datetime, timedelta
-
-# Helper function to calculate date ranges
-def get_date_range(option):
-    today = datetime.today()
-    if option == "1 Year":
-        return today - timedelta(days=365), today
-    elif option == "3 Years":
-        return today - timedelta(days=365 * 3), today
-    elif option == "5 Years":
-        return today - timedelta(days=365 * 5), today
-    elif option == "All":
-        return today - timedelta(days=365 * 1000), today
-    return None, None
-
-# Sidebar for inputs
-st.sidebar.title("Stock Data Input")
-tickers = st.sidebar.text_input("Enter ticker symbols (e.g., AAPL MSFT)", "AAPL")
-interval = st.sidebar.selectbox("Select interval", ['1d', '1wk', '1mo', '3mo'])
-
-# Predefined date ranges
-date_option = st.sidebar.selectbox("Select Date Range", ["1 Year", "3 Years", "5 Years", "All", "Custom"])
-start_date, end_date = get_date_range(date_option)
-
-# If "Custom" is selected, let the user pick exact start and end dates
-if date_option == "Custom":
-    start_date = st.sidebar.date_input("Start date", datetime(2020, 1, 1))
-    end_date = st.sidebar.date_input("End date", datetime(2023, 1, 1))
 
 # Tab structure for different features
-tab1, tab2 = st.tabs(["Stock Data", "Company Financials"])
+tab1, tab2, tab3 = st.tabs(["Stock Data", "Company Financials", "Valuation"])
 
 # First tab: Stock Data Download
 with tab1:
-    st.title(" Historical Stock Data")
+    st.title("Historical Stock Data")
 
+    # Inputs for Stock Data
+    tickers = st.text_input("Enter ticker symbols (e.g., AAPL MSFT)", "AAPL")
+    interval = st.selectbox("Select interval", ['1d', '1wk', '1mo', '3mo'])
+    date_option = st.selectbox("Select Date Range", ["1 Year", "3 Years", "5 Years", "All", "Custom"])
+    
     # Automatically download stock data based on user input
-    df = yf.download(tickers, start=start_date, end=end_date, interval=interval)
+    df = yf.download(tickers, period="5y", interval=interval)
     
     if not df.empty:
-        st.write(f"Stock Data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}:")
+        st.write("Stock Data:")
         st.dataframe(df)
         csv = df.to_csv().encode('utf-8')
         st.download_button(
@@ -57,10 +33,8 @@ with tab1:
 with tab2:
     st.title("Download Company Financials")
 
-    # User input for financials
-    financial_ticker = st.text_input("Enter company ticker for financials (e.g., AAPL, MSFT)", "AAPL")
+    financial_ticker = st.text_input("Enter company ticker for financials (e.g., AAPL, MSFT)", "AAPL", key="financials")
     
-    # Automatically download company financials
     ticker_obj = yf.Ticker(financial_ticker)
     
     # Balance Sheet
@@ -92,3 +66,37 @@ with tab2:
         )
     else:
         st.error("Income statement not available.")
+
+# Third tab: Stock Valuation using Benjamin Graham Valuation Equation
+with tab3:
+    st.title("Stock Valuation")
+
+    # Inputs for Benjamin Graham Valuation
+    earnings_per_share = st.number_input("Enter Earnings per Share (EPS)", value=5.0)
+    growth_rate_eps = st.number_input("Enter estimated growth rate for EPS (as a percentage)", 0.0, 100.0, 5.0)
+    discount_rate = st.number_input("Enter discount rate (as a percentage)", 0.0, 100.0, 10.0)
+
+    # Benjamin Graham Valuation Equation Calculation
+    graham_stock_price = (earnings_per_share * (8.5 + 2 * growth_rate_eps)) * 4.4 / discount_rate
+
+    # Display the result in a larger font with light blue background, rounded edges
+    st.write(f"""
+        <div style='text-align: center; background-color: #d9edf7; padding: 15px; 
+                    border-radius: 10px; font-size: 24px; color: #31708f;'>
+            Estimated stock price using Benjamin Graham Valuation: <strong>${graham_stock_price:.2f}</strong>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # LaTeX for Benjamin Graham Valuation Equation
+    st.latex(r'''
+    \text{Benjamin Graham Valuation Equation:} \ P = \frac{E \times (8.5 + 2 \times g_{\text{EPS}}) \times 4.4}{r}
+    ''')
+
+    # Bullet points explaining the variables in the formula
+    st.markdown("""
+    **Where:**
+    - **P** = Price
+    - **E** = Earnings per Share (EPS)
+    - **g** = Growth Rate of EPS
+    - **r** = Discount Rate
+    """)
